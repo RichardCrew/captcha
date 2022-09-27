@@ -235,8 +235,8 @@ class ImageCaptcha(_Captcha):
 
         :param chars: text to be generated.
         """
-        background = random_color(238, 255)
-        color = random_color(10, 200, random.randint(220, 255))
+        background = random_color(255, 255)
+        color = random_color(97, 97, random.randint(97, 97))
         im = self.create_captcha_image(chars, color, background)
         self.create_noise_dots(im, color)
         self.create_noise_curve(im, color)
