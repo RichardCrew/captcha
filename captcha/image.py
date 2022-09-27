@@ -22,7 +22,7 @@ except ImportError:
     wheezy_captcha = None
 
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-DEFAULT_FONTS = [os.path.join(DATA_DIR, 'DroidSansMono.ttf')]
+DEFAULT_FONTS = [os.path.join(DATA_DIR, 'AHGBold.ttf')]
 
 if wheezy_captcha:
     __all__ = ['ImageCaptcha', 'WheezyCaptcha']
@@ -187,7 +187,7 @@ class ImageCaptcha(_Captcha):
 
             # rotate
             im = im.crop(im.getbbox())
-            im = im.rotate(random.uniform(-30, 30), _BILINEAR, expand=1)
+            im = im.rotate(random.uniform(-5, 5), _BILINEAR, expand=1)
 
             # warp
             dx = w * random.uniform(0.1, 0.5)
@@ -210,12 +210,10 @@ class ImageCaptcha(_Captcha):
 
         images = []
         for c in chars:
-            if random.random() > 0.5:
-                images.append(_draw_character(" "))
+          if random.random() > .5:
+            images.append(_draw_character(" "))
         for c in chars:
-            if random.random() > 0.5:
-                images.append(_draw_character(""))
-            images.append(_draw_character(c))
+          images.append(_draw_character(c))
 
         text_width = sum([im.size[0] for im in images])
 
