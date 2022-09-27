@@ -1,4 +1,4 @@
-# coding: utf-8
+%%writefile /kaggle/working/captcha/captcha/image.py
 """
     captcha.image
     ~~~~~~~~~~~~~
@@ -12,6 +12,7 @@ from PIL import Image
 from PIL import ImageFilter
 from PIL.ImageDraw import Draw
 from PIL.ImageFont import truetype
+import math
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -70,7 +71,7 @@ class _Captcha(object):
 
 class WheezyCaptcha(_Captcha):
     """Create an image CAPTCHA with wheezy.captcha."""
-    def __init__(self, width=200, height=75, fonts=None):
+    def __init__(self, width=215, height=80, fonts=None):
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
@@ -115,13 +116,14 @@ class ImageCaptcha(_Captcha):
     :param fonts: Fonts to be used to generate CAPTCHA images.
     :param font_sizes: Random choose a font size from this parameters.
     """
-    def __init__(self, width=160, height=60, fonts=None, font_sizes=None):
+    def __init__(self, width=215, height=80, fonts=None, font_sizes=None):
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
-        self._font_sizes = font_sizes or (42, 50, 56)
+        self._font_sizes = font_sizes or (32, 40, 56)
         self._truefonts = []
-
+        
+   
     @property
     def truefonts(self):
         if self._truefonts:
@@ -134,23 +136,26 @@ class ImageCaptcha(_Captcha):
         return self._truefonts
 
     @staticmethod
-    def create_noise_curve(image, color):
-        w, h = image.size
-        x1 = random.randint(0, int(w / 5))
-        x2 = random.randint(w - int(w / 5), w)
-        y1 = random.randint(int(h / 5), h - int(h / 5))
-        y2 = random.randint(y1, h - int(h / 5))
-        points = [x1, y1, x2, y2]
-        end = random.randint(160, 200)
-        start = random.randint(0, 20)
-        Draw(image).arc(points, start, end, fill=color)
+    def create_noise_curve(image, color):   
+        for i in range(5):
+            w, h = image.size
+            x1 = random.randint(0, int(w / 5))
+            x2 = random.randint(w - int(w / 5), w)
+            y1 = random.randint(int(h / 5), h - int(h / 5))
+            y2 = random.randint(y1, h - int(h / 5))
+            points = [x1, y1, x2, y2]
+            end = random.randint(160, 200)
+            start = random.randint(0, 20)
+            Draw(image).arc(points, start, end, fill=color)
         return image
 
     @staticmethod
-    def create_noise_dots(image, color, width=3, number=30):
+    def create_noise_dots(image, color, width=4, number=100):
+        
         draw = Draw(image)
         w, h = image.size
         while number:
+            width = random.randint(0,4)
             x1 = random.randint(0, w)
             y1 = random.randint(0, h)
             draw.line(((x1, y1), (x1 - 1, y1 - 1)), fill=color, width=width)
@@ -176,7 +181,7 @@ class ImageCaptcha(_Captcha):
             except AttributeError:
                 w, h = draw.textsize(c, font=font)
 
-            dx = random.randint(0, 4)
+            dx = random.randint(0, 6)
             dy = random.randint(0, 6)
             im = Image.new('RGBA', (w + dx, h + dy))
             Draw(im).text((dx, dy), c, font=font, fill=color)
@@ -186,8 +191,8 @@ class ImageCaptcha(_Captcha):
             im = im.rotate(random.uniform(-30, 30), _BILINEAR, expand=1)
 
             # warp
-            dx = w * random.uniform(0.1, 0.3)
-            dy = h * random.uniform(0.2, 0.3)
+            dx = w * random.uniform(0.1, 0.5)
+            dy = h * random.uniform(0.2, 0.5)
             x1 = int(random.uniform(-dx, dx))
             y1 = int(random.uniform(-dy, dy))
             x2 = int(random.uniform(-dx, dx))
@@ -205,6 +210,9 @@ class ImageCaptcha(_Captcha):
             return im
 
         images = []
+        for c in chars:
+            if random.random() > 0.5:
+                images.append(_draw_character(" "))
         for c in chars:
             if random.random() > 0.5:
                 images.append(_draw_character(""))
@@ -251,3 +259,4 @@ def random_color(start, end, opacity=None):
     if opacity is None:
         return (red, green, blue)
     return (red, green, blue, opacity)
+
