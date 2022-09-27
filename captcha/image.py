@@ -207,6 +207,9 @@ class ImageCaptcha(_Captcha):
 
         images = []
 
+        for c in chars:
+            images.append(_draw_character(c))
+
         text_width = sum([im.size[0] for im in images])
 
         width = max(text_width, self._width)
