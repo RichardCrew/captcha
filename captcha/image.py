@@ -1,4 +1,3 @@
-%%writefile /kaggle/working/captcha/captcha/image.py
 """
     captcha.image
     ~~~~~~~~~~~~~
