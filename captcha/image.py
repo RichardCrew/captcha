@@ -22,7 +22,7 @@ except ImportError:
     wheezy_captcha = None
 
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-DEFAULT_FONTS = [os.path.join(DATA_DIR, 'AHGBold.ttf')]
+DEFAULT_FONTS = [os.path.join(DATA_DIR, 'DroidSansMono.ttf')]
 
 if wheezy_captcha:
     __all__ = ['ImageCaptcha', 'WheezyCaptcha']
@@ -70,7 +70,7 @@ class _Captcha(object):
 
 class WheezyCaptcha(_Captcha):
     """Create an image CAPTCHA with wheezy.captcha."""
-    def __init__(self, width=215, height=80, fonts=None):
+    def __init__(self, width=200, height=75, fonts=None):
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
@@ -115,7 +115,7 @@ class ImageCaptcha(_Captcha):
     :param fonts: Fonts to be used to generate CAPTCHA images.
     :param font_sizes: Random choose a font size from this parameters.
     """
-    def __init__(self, width=215, height=80, fonts=None, font_sizes=None):
+    def __init__(self, width=160, height=60, fonts=None, font_sizes=None):
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
@@ -135,16 +135,15 @@ class ImageCaptcha(_Captcha):
 
     @staticmethod
     def create_noise_curve(image, color):
-        for i in range(5):
-            w, h = image.size
-            x1 = random.randint(0, int(w / 5))
-            x2 = random.randint(w - int(w / 5), w)
-            y1 = random.randint(int(h / 5), h - int(h / 5))
-            y2 = random.randint(y1, h - int(h / 5))
-            points = [x1, y1, x2, y2]
-            end = random.randint(160, 200)
-            start = random.randint(0, 20)
-            Draw(image).arc(points, start, end, fill=color)
+        w, h = image.size
+        x1 = random.randint(0, int(w / 5))
+        x2 = random.randint(w - int(w / 5), w)
+        y1 = random.randint(int(h / 5), h - int(h / 5))
+        y2 = random.randint(y1, h - int(h / 5))
+        points = [x1, y1, x2, y2]
+        end = random.randint(160, 200)
+        start = random.randint(0, 20)
+        Draw(image).arc(points, start, end, fill=color)
         return image
 
     @staticmethod
@@ -184,11 +183,11 @@ class ImageCaptcha(_Captcha):
 
             # rotate
             im = im.crop(im.getbbox())
-            im = im.rotate(random.uniform(-40, 40), _BILINEAR, expand=1)
+            im = im.rotate(random.uniform(-30, 30), _BILINEAR, expand=1)
 
             # warp
-            dx = w * random.uniform(0.1, 0.9)
-            dy = h * random.uniform(0.2, 0.9)
+            dx = w * random.uniform(0.1, 0.3)
+            dy = h * random.uniform(0.2, 0.3)
             x1 = int(random.uniform(-dx, dx))
             y1 = int(random.uniform(-dy, dy))
             x2 = int(random.uniform(-dx, dx))
@@ -206,8 +205,9 @@ class ImageCaptcha(_Captcha):
             return im
 
         images = []
-
         for c in chars:
+            if random.random() > 0.5:
+                images.append(_draw_character(" "))
             images.append(_draw_character(c))
 
         text_width = sum([im.size[0] for im in images])
@@ -235,10 +235,19 @@ class ImageCaptcha(_Captcha):
 
         :param chars: text to be generated.
         """
-        background = (255,255,255,None)
-        color = (97,97,97,None)
+        background = random_color(238, 255)
+        color = random_color(10, 200, random.randint(220, 255))
         im = self.create_captcha_image(chars, color, background)
         self.create_noise_dots(im, color)
         self.create_noise_curve(im, color)
         im = im.filter(ImageFilter.SMOOTH)
         return im
+
+
+def random_color(start, end, opacity=None):
+    red = random.randint(start, end)
+    green = random.randint(start, end)
+    blue = random.randint(start, end)
+    if opacity is None:
+        return (red, green, blue)
+    return (red, green, blue, opacity)
